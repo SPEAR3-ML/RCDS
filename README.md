@@ -1,4 +1,5 @@
-# The RCDS Algorithm and Its Matlab Implementation for Automated Tuning
+# Robust Conjugate Direction Search
+
 - X. Huang, SLAC, 2575 Sand Hill Road, Menlo Park, CA 94025
 - xiahuang@slac.stanford.edu
 - 6/24/2013
@@ -7,7 +8,14 @@ The RCDS (robust conjugate direction search method) is an optimization method fo
 
 There are risks when using an automated algorithm to run a machine. The RCDS algorithm provides a mechanism for the user to limit and check the ranges of the parameters. However, because of the complexity of the potential applications, it is impossible to rule out the possibility that something goes wrong. The responsibility of machine or personnel safety lies entirely with the user of the algorithm/code.
 
-**Disclaimer**: The RCDS algorithm or the Matlab RCDS code come with absolutely NO warranty. The author of the RCDS method and the Matlab RCDS code does not take any responsibility for any damage to equipments or personnel injury that may result from the use of the algorithm or the code.
+RCDS has been implemented in both Matlab and Python.
+
+**Disclaimer**: The RCDS algorithm or the Matlab/Python RCDS code come with absolutely NO warranty. The author of the RCDS method and the Matlab RCDS code does not take any responsibility for any damage to equipments or personnel injury that may result from the use of the algorithm or the code.
+
+If you'd like to use it in your research or project, please cite the following paper:
+
+- RCDS  
+	[An Algorithm for Online Optimization of Accelerators](https://doi.org/10.1016/j.nima.2013.05.046)
 
 ## I. Description of the algorithm and the package
 
