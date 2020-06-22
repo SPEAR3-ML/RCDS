@@ -1,33 +1,31 @@
-### The RCDS Algorithm and Its Matlab Implementation for Automated Tuning
+# The RCDS Algorithm and Its Matlab Implementation for Automated Tuning
 - X. Huang, SLAC, 2575 Sand Hill Road, Menlo Park, CA 94025
 - xiahuang@slac.stanford.edu
 - 6/24/2013
 
----
-
-The RCDS (robust conjugate direction method) is an optimization method for multi-variable, noisy objective functions. This method performs iterative line scans to minimize a function (single objective) over a set of directions. These directions are preferred to be mutually conjugate. The main advantage of the method is its capability to find the optimum in a noisy environment, which makes it suitable for automated tuning. This capability is achieved through the robust line optimizer. Please refer to Ref. [^1] for more details.
+The RCDS (robust conjugate direction search method) is an optimization method for multi-variable, noisy objective functions. This method performs iterative line scans to minimize a function (single objective) over a set of directions. These directions are preferred to be mutually conjugate. The main advantage of the method is its capability to find the optimum in a noisy environment, which makes it suitable for automated tuning. This capability is achieved through the robust line optimizer. Please refer to Ref. [1] for more details.
 
 There are risks when using an automated algorithm to run a machine. The RCDS algorithm provides a mechanism for the user to limit and check the ranges of the parameters. However, because of the complexity of the potential applications, it is impossible to rule out the possibility that something goes wrong. The responsibility of machine or personnel safety lies entirely with the user of the algorithm/code.
 
-**Disclaime**r: The RCDS algorithm or the Matlab RCDS code come with absolutely NO warranty. The author of the RCDS method and the Matlab RCDS code does not take any responsibility for any damage to equipments or personnel injury that may result from the use of the algorithm or the code.
+**Disclaimer**: The RCDS algorithm or the Matlab RCDS code come with absolutely NO warranty. The author of the RCDS method and the Matlab RCDS code does not take any responsibility for any damage to equipments or personnel injury that may result from the use of the algorithm or the code.
 
-#### I. Description of the algorithm and the package
+## I. Description of the algorithm and the package
 
 The RCDS algorithm has two components: Powell’s algorithm to update the conjugate direction set and the robust line optimizer to look for the minimum on each direction. The implementation has three functions:
 
-- `powellmain.m`: This is the backbone of the algorithm. It implements Powell’s method as described in Numerical Recipe [^2]. It contains the main iteration loop. For each iteration it searches all directions, one at a time. At the end of the iteration the direction with the largest decrease of the objective may be replaced with the direction from the best solution of the previous iteration to the present best solution. For the search in each direction, the bounds that enclose a minimum is first established with the function `bracketmin.m`. Then a line scan is performed within the bounded region with the function `linescan.m`.
+- `powellmain.m`: This is the backbone of the algorithm. It implements Powell’s method as described in Numerical Recipe [2]. It contains the main iteration loop. For each iteration it searches all directions, one at a time. At the end of the iteration the direction with the largest decrease of the objective may be replaced with the direction from the best solution of the previous iteration to the present best solution. For the search in each direction, the bounds that enclose a minimum is first established with the function `bracketmin.m`. Then a line scan is performed within the bounded region with the function `linescan.m`.
 - `bracketmin.m`: Given a function handle, an initial solution, a line in the parameter space, and an initial step size, this function goes both directions on the line to find two points whose objective function values are significantly higher (i.e., by more than three times the noise sigma) than that of a point in between. If the boundary of the parameter space is met before a true bound is found, the last evaluated point is used as the bound in that direction.
 - `linescan.m`: This function searches the bounded region as determined by `bracketmin.m` to find the minimum within. The solutions evaluated in `bracketmin.m` are passed to this function and reused. A few new solutions along the line are inserted to fill the large distance between the existing solutions. A quadratic polynomial fitting is performed for all solutions in the bounded region. Outliers in the data points are detected with the function “outlier1d”. If there is one outelier, it is removed and data are refitted. If there
 are two or more outliers, the fitting is discarded and the evaluated solution with the minimum objective is returned. Otherwise evaluate 101 points on the fitted parabola within the bounded region and find the minimum.
 
-#### II. Usage of the Matlab RCDS package
+## II. Usage of the Matlab RCDS package
 
 The code for the algorithm is written to be generally applicable. The three Matlab functions described above are not problem-specific. When we apply the algorithm to a new problem, we only need to provide an objective function and launch the algorithm. We illustrate the use of the algorithm with an example below. Please look into the functions “func_obj”, “run_RCDS_test” under the sub-directory “ex0” for details. The four functions in the previous section need to be in the Matlab path to run this example. Try the example in Matlab with:
 ```matlab
 >> run_RCDS_test
 ```
 
-##### Defining the objective function
+### Defining the objective function
 
 For this example the objective function is defined in the function “func_obj”. The input of this function is the parameter vector, with each variable normalized to the zone [0, 1]. The original ranges of the variables are defined in the global variable “vrange”. The first block of the function checks the values of the parameters. If any parameter falls outside of [0, 1], the function returns NaN (Not a Number). Otherwise, the real parameter vector, “p”, is calculated using “vrange” and “x”.
 
@@ -35,7 +33,7 @@ In the second block we evaluate the objective function. For a real online proble
 
 The parameter vector and the objective function are then appended to a global variable - the “g_data” matrix. In this way we save the data in the Matlab global space, which will not be lost even if the program crashes or is terminated manually (which is usually the case). You may also want to print out the solutions to the Matlab window to monitor the optimization process.
 
-##### Launching RCDS
+### Launching RCDS
 
 Setting up and launching the algorithm is done in the script `run_RCDS_test.m`. In this script we define and initialize the global variables, which are 
 - Nvar – the number of parameters.
@@ -60,7 +58,7 @@ where the input arguments are
 - flag_plot – a flag indicating if we want to plot the bracketing and line scan data.
 - maxEval – the maximum of function evaluations. This is often used as a termination condition.
 
-##### Terminating, examining data and applying the best solution
+### Terminating, examining data and applying the best solution
 
 The algorithm may be terminated using the conditions defined with “tol” or “maxEval”. But more frequently we may simply terminate the running code with “Ctrl+C” after a satisfactory gain has been made or it is no longer making appreciable gains or the shift is running out of time. A forced termination will not lose data since they are saved in the global variable “g_data”. However, we need to save the data to a file immediately and make sure the file name differs from previously saved files to avoid overwriting. It is advisable to back up the data file immediately after it is saved.
 
@@ -72,7 +70,7 @@ The “process_data” function returns the preferred solution in normalized par
 
 If the optimization algorithm is otherwise interrupted (e.g. crashed), we also save data as described above. We may also want to apply the best solution. After that the code can start again automatically from the best solution if we use the present machine setpoints as the initial solution (this can be set in `run_RCDS_test.m`).
 
-##### The initial conjugate direction set
+### The initial conjugate direction set
 
 In theory Powell’s method is able to develop a conjugate direction set gradually from search results. However, the limited machine study time often means the code doesn’t have time to replace and refine the initial direction set. For some problems it is very important to provide a good initial direction set.
 
@@ -81,6 +79,6 @@ conjugate direction set. If we can evaluate the Hessian matrix H of the objectiv
 
 In some cases we can identify a set of conditions that are equivalent or nearly equivalent to the optimal condition. Calculating the derivatives of the parameters in these conditions with respect to the knob parameters (the Jacobian) may be more convenient than calculating the second order derivatives directly as required for the Hessian. For example, for the coupling correction problem, the condition of minimum coupling is nearly equivalent to small off-diagonal elements on the orbit response matrix. We can calculate the Jacobian matrix J of these off-diagonal elements. A direction set is then given by the singular value decomposition (i.e., the V-matrix of $`[U,S,V] = svd(J)`$ , this is the case since $`H = J^TJ`$).
 
-#### References
-[^1]: X. Huang, J. Corbett, J. Safranek, J. Wu, Nucl. Instr. Methods, A, 726 (2013) 77-83.
-[^2]: W. H. Press, et al, Numeric Recipies, Cambridge University Press (2007).
+## References
+- [1]: X. Huang, J. Corbett, J. Safranek, J. Wu, Nucl. Instr. Methods, A, 726 (2013) 77-83.
+- [2]: W. H. Press, et al, Numeric Recipies, Cambridge University Press (2007).
